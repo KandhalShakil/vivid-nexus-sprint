@@ -33,7 +33,7 @@ export default function Hero() {
           </p>
 
           <div className="vn-hero__actions">
-            <a href="#" className="vn-btn vn-btn--solid">
+            <a href="https://instagram.com/vividnexus.in" className="vn-btn vn-btn--solid">
               <Instagram size={16} /> DM Us on Instagram
             </a>
             <a href="#services" className="vn-btn vn-btn--ghost" onClick={scrollToServices}>

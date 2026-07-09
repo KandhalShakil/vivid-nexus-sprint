@@ -44,10 +44,10 @@ export default function Rules() {
         <h3>Agree with the terms?</h3>
         <p>DM us on Instagram or email to begin your onboarding.</p>
         <div className="vn-hero__actions" style={{ justifyContent: "center" }}>
-          <a href="#" className="vn-btn vn-btn--solid">
+          <a href="https://instagram.com/vividnexus.in" className="vn-btn vn-btn--solid">
             Message on Instagram
           </a>
-          <a href="#" className="vn-btn vn-btn--ghost">
+          <a href="mailto:work@vividnexus.in" className="vn-btn vn-btn--ghost">
             Email Our Team
           </a>
         </div>

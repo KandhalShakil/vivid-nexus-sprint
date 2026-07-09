@@ -139,7 +139,7 @@ export default function Checkout() {
             </p>
             <div className="vn-hero__actions" style={{ marginTop: 18 }}>
               <a
-                href="https://instagram.com"
+                href="https://instagram.com/vividnexus.in"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="vn-btn vn-btn--solid"

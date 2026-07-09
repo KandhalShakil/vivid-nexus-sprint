@@ -13,10 +13,10 @@ export default function FinalCTA() {
           single one gets elite-quality attention.
         </p>
         <div className="vn-hero__actions" style={{ justifyContent: "center" }}>
-          <a href="#" className="vn-btn vn-btn--solid">
+          <a href="https://instagram.com/vividnexus.in" className="vn-btn vn-btn--solid">
             <Instagram size={16} /> Message on Instagram
           </a>
-          <a href="#" className="vn-btn vn-btn--ghost">
+          <a href="mailto:work@vividnexus.in" className="vn-btn vn-btn--ghost">
             <Mail size={16} /> Email Our Team
           </a>
         </div>
