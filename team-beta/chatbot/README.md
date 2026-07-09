@@ -298,16 +298,6 @@ When we push an update, all integrated websites receive the latest version and i
 
 ---
 
-# Best Practices
-
-- Place the script near the end of the page.
-- Serve the widget over HTTPS.
-- Configure a production backend endpoint.
-- Keep your API credentials secure.
-- Enable rate limiting on the server.
-
----
-
 # Example
 
 ```html
