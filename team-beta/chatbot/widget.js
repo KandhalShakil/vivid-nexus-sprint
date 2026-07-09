@@ -179,7 +179,6 @@
     document.head.appendChild(stylesheet);
 
     const chatApp = document.createElement("div");
-
 	  const toggleBtn = document.createElement("button");
     toggleBtn.classList.add("chat-toggle-btn");
     toggleBtn.textContent = "💬";
