@@ -35,78 +35,57 @@ app.get("/api/health", (req, res) => {
 });
 
 app.post("/api/leads", async (req, res) => {
-  try {
-    const {
-      clientName,
-      email,
-      whatsappNumber,
-      corporateUrl,
-      selectedPlan,
-      planPrice,
-      message,
-      timestamp,
-    } = req.body;
+  const {
+    clientName,
+    email,
+    whatsappNumber,
+    corporateUrl,
+    selectedPlan,
+    planPrice,
+    message,
+    timestamp,
+  } = req.body;
 
-    if (!clientName || !email || !whatsappNumber) {
-      return res.status(400).json({
-        success: false,
-        message: "Client name, email, and WhatsApp number are required",
-      });
-    }
-
-    if (!process.env.WEB3FORMS_ACCESS_KEY) {
-      console.error("Missing WEB3FORMS_ACCESS_KEY");
-      return res.status(500).json({
-        success: false,
-        message: "Email service is not configured",
-      });
-    }
-
-    console.log("Lead received:", req.body);
-
-    const response = await fetch("https://api.web3forms.com/submit", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        access_key: process.env.WEB3FORMS_ACCESS_KEY,
-        subject: `New Lead - ${selectedPlan || "Vivid Nexus"}`,
-        from_name: "Vivid Nexus Website",
-        name: clientName,
-        email,
-        phone: whatsappNumber,
-        corporateUrl: corporateUrl || "Not provided",
-        selectedPlan: selectedPlan || "Not provided",
-        planPrice: planPrice || "Not provided",
-        message: message || "No message provided",
-        submittedAt: timestamp || new Date().toISOString(),
-      }),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok || !data.success) {
-      console.error("Web3Forms failed:", data);
-      return res.status(500).json({
-        success: false,
-        message: "Failed to send lead email",
-      });
-    }
-
-    console.log("Lead email sent successfully via Web3Forms");
-
-    return res.status(200).json({
-      success: true,
-      message: "Lead submitted successfully",
-    });
-  } catch (error) {
-    console.error("Lead submission failed:", error);
-
-    return res.status(500).json({
+  if (!clientName || !email || !whatsappNumber) {
+    return res.status(400).json({
       success: false,
-      message: "Failed to submit lead",
+      message: "Client name, email, and WhatsApp number are required",
     });
+  }
+
+  console.log("Lead received:", req.body);
+
+  const leadText = `
+New Vivid Nexus Lead
+
+Client Name: ${clientName}
+Client Email: ${email}
+WhatsApp Number: ${whatsappNumber}
+Corporate / Business URL: ${corporateUrl || "Not provided"}
+
+Selected Plan: ${selectedPlan || "Not provided"}
+Plan Price: ${planPrice || "Not provided"}
+
+Message:
+${message || "No message provided"}
+
+Submitted At: ${timestamp || new Date().toISOString()}
+`;
+
+  res.status(200).json({
+    success: true,
+    message: "Lead submitted successfully",
+  });
+
+  if (!process.env.MAIL_USER || !process.env.MAIL_PASS || !process.env.CEO_EMAIL) {
+    console.error("Lead email skipped: missing mail env variables");
+    return;
+  }
+
+  try {
+    await sendLeadEmail({ email, selectedPlan, leadText });
+  } catch (error) {
+    console.error("Lead email failed:", error);
   }
 });
 

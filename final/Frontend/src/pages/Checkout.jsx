@@ -5,13 +5,13 @@ import BrowserWindow from "../components/BrowserWindow.jsx";
 const API_URL = import.meta.env.VITE_API_URL;
 console.log("API_URL:", API_URL);
 
+const WEB3FORMS_ACCESS_KEY = import.meta.env.VITE_WEB3FORMS_ACCESS_KEY;
+const FRONTEND_URL = import.meta.env.VITE_FRONTEND_URL || "https://www.vividnexus.in";
+
 export default function Checkout() {
-  const { planSlug } = useParams();
+  const { planSlug = "selected-plan" } = useParams();
   const location = useLocation();
 
-  // Plan details are passed via navigate(..., { state }). Fall back to the
-  // slug (e.g. if someone lands here directly via a shared URL) so the page
-  // never looks broken.
   const plan = location.state || {
     title: planSlug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
     price: null,
@@ -19,39 +19,58 @@ export default function Checkout() {
     desc: "",
   };
 
-  const [form, setForm] = useState({ name: "", email: "", phone: "", message: "" });
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    message: "",
+  });
+
   const [submitted, setSubmitted] = useState(false);
 
   const handleChange = (e) => {
-    setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
+    setForm((currentForm) => ({
+      ...currentForm,
+      [e.target.name]: e.target.value,
+    }));
   };
-
-  const API_URL = import.meta.env.VITE_API_URL;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (!WEB3FORMS_ACCESS_KEY) {
+      alert("Web3Forms access key is missing. Please check frontend .env file.");
+      return;
+    }
+
     try {
-      const response = await fetch(`${API_URL}/api/leads`, {
+      const response = await fetch("https://api.web3forms.com/submit", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Accept: "application/json",
         },
         body: JSON.stringify({
-          clientName: form.name,
+          access_key: WEB3FORMS_ACCESS_KEY,
+          subject: `New Lead - ${plan.title}`,
+          from_name: "Vivid Nexus Website",
+          name: form.name,
           email: form.email,
+          phone: form.phone,
           whatsappNumber: form.phone,
-          corporateUrl: "",
+          website: FRONTEND_URL,
           selectedPlan: plan.title,
-          planPrice: plan.price ? `₹${plan.price}${plan.per ? `/${plan.per}` : ""}` : "",
-          message: form.message,
-          timestamp: new Date().toISOString(),
+          planPrice: plan.price
+            ? `₹${plan.price}${plan.per ? `/${plan.per}` : ""}`
+            : "",
+          message: form.message || "No message provided",
+          submittedAt: new Date().toISOString(),
         }),
       });
 
       const data = await response.json();
 
-      if (!response.ok) {
+      if (!response.ok || !data.success) {
         throw new Error(data.message || "Failed to submit lead");
       }
 
@@ -82,9 +101,11 @@ export default function Checkout() {
               <span className="vn-dot" />
               CHECKOUT
             </div>
+
             <h1 className="vn-h2" style={{ marginTop: 12 }}>
               {plan.title}
             </h1>
+
             {plan.price && (
               <div className="vn-price vn-price--sm" style={{ marginTop: 14 }}>
                 <span className="vn-price__currency">₹</span>
@@ -92,6 +113,7 @@ export default function Checkout() {
                 {plan.per && <span className="vn-price__per">/{plan.per}</span>}
               </div>
             )}
+
             {plan.desc && <p className="vn-checkout__desc">{plan.desc}</p>}
 
             <BrowserWindow url="vividnexus.in/checkout" className="vn-checkout__window">
@@ -100,9 +122,9 @@ export default function Checkout() {
                   <CheckCircle2 size={32} />
                   <h3>Request received!</h3>
                   <p>
-                    Thanks {form.name || "there"} — we've got your details for{" "}
-                    <strong>{plan.title}</strong>. Our team will reach out within 24
-                    hours to confirm scope and next steps.
+                    Thanks {form.name || "there"}, we have your details for{" "}
+                    <strong>{plan.title}</strong>. Our team will reach out within
+                    24 hours to confirm scope and next steps.
                   </p>
                 </div>
               ) : (
@@ -119,6 +141,7 @@ export default function Checkout() {
                       required
                     />
                   </div>
+
                   <div className="vn-form__row">
                     <label htmlFor="email">Email</label>
                     <input
@@ -131,6 +154,7 @@ export default function Checkout() {
                       required
                     />
                   </div>
+
                   <div className="vn-form__row">
                     <label htmlFor="phone">Phone / WhatsApp</label>
                     <input
@@ -143,6 +167,7 @@ export default function Checkout() {
                       required
                     />
                   </div>
+
                   <div className="vn-form__row">
                     <label htmlFor="message">Anything we should know?</label>
                     <textarea
@@ -154,6 +179,7 @@ export default function Checkout() {
                       onChange={handleChange}
                     />
                   </div>
+
                   <button type="submit" className="vn-btn vn-btn--solid vn-btn--block">
                     Confirm &amp; Get Started
                   </button>
@@ -165,9 +191,10 @@ export default function Checkout() {
           <div className="vn-checkout__contact">
             <h3>Prefer to talk it through first?</h3>
             <p>
-              DM us on Instagram or email our team directly — we typically reply
+              DM us on Instagram or email our team directly. We typically reply
               within a few hours.
             </p>
+
             <div className="vn-hero__actions" style={{ marginTop: 18 }}>
               <a
                 href="https://www.instagram.com/vividnexus.in"
@@ -177,6 +204,7 @@ export default function Checkout() {
               >
                 <Instagram size={16} /> Message on Instagram
               </a>
+
               <a href="mailto:ceo@vividnexus.in" className="vn-btn vn-btn--ghost">
                 <Mail size={16} /> Email Our Team
               </a>
