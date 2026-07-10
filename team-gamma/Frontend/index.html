@@ -4,9 +4,20 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Vivid Nexus — Growth Studio</title>
+    <script src="./widget.js" defer></script>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            window.initSmartChatWidget({
+                brandName: "Smart AI Chatbot",
+                brandColor: "Black", 
+                brandChatLogo: "💬",
+                welcomeMessage: "Welcome to Vivid Nexus. Please share your email to start triage assessment.",
+            });
+        });
+    </script>
   </body>
 </html>
