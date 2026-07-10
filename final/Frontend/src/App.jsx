@@ -11,6 +11,15 @@ function ScrollToTop() {
   }, [pathname]);
   return null;
 }
+const API = import.meta.env.VITE_API_URL;
+
+await fetch(`${API}/api/leads`, {
+    method: "POST",
+    headers: {
+        "Content-Type": "application/json"
+    },
+    body: JSON.stringify(formData)
+});
 
 export default function App() {
   return (
