@@ -2,11 +2,10 @@ import React, { useState } from "react";
 import { useParams, useLocation, Link } from "react-router-dom";
 import { ArrowLeft, Instagram, Mail, CheckCircle2 } from "lucide-react";
 import BrowserWindow from "../components/BrowserWindow.jsx";
-const API_URL = import.meta.env.VITE_API_URL;
-console.log("API_URL:", API_URL);
-
-const WEB3FORMS_ACCESS_KEY = import.meta.env.VITE_WEB3FORMS_ACCESS_KEY;
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 const FRONTEND_URL = import.meta.env.VITE_FRONTEND_URL || "https://www.vividnexus.in";
+const PAYMENT_PORTAL_URL =
+  import.meta.env.VITE_PAYMENT_PORTAL_URL || "http://localhost:5173";
 
 export default function Checkout() {
   const { planSlug = "selected-plan" } = useParams();
@@ -38,34 +37,24 @@ export default function Checkout() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!WEB3FORMS_ACCESS_KEY) {
-      alert("Web3Forms access key is missing. Please check frontend .env file.");
-      return;
-    }
-
     try {
-      const response = await fetch("https://api.web3forms.com/submit", {
+      const response = await fetch(`${API_URL}/api/leads`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
+          "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          access_key: WEB3FORMS_ACCESS_KEY,
-          subject: `New Lead - ${plan.title}`,
-          from_name: "Vivid Nexus Website",
-          name: form.name,
+          clientName: form.name,
           email: form.email,
-          phone: form.phone,
           whatsappNumber: form.phone,
-          website: FRONTEND_URL,
+          corporateUrl: FRONTEND_URL,
           selectedPlan: plan.title,
           planPrice: plan.price
             ? `₹${plan.price}${plan.per ? `/${plan.per}` : ""}`
             : "",
           message: form.message || "No message provided",
-          submittedAt: new Date().toISOString(),
-        }),
+          timestamp: new Date().toISOString()
+        })
       });
 
       const data = await response.json();
@@ -74,7 +63,15 @@ export default function Checkout() {
         throw new Error(data.message || "Failed to submit lead");
       }
 
-      setSubmitted(true);
+      const paymentParams = new URLSearchParams({
+        name: form.name,
+        email: form.email,
+        phone: form.phone,
+        purpose: plan.title || "Selected Service",
+        amount: plan.price ? String(plan.price).replace(/,/g, "") : ""
+      });
+
+      window.location.href = `${PAYMENT_PORTAL_URL}/?${paymentParams.toString()}#payment-form`;
     } catch (error) {
       console.error("Lead submission failed:", error);
       alert("Something went wrong. Please try again or contact us directly.");

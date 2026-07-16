@@ -1,4 +1,5 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api";
 
 async function handleResponse(response) {
   const data = await response.json().catch(() => null);
@@ -10,8 +11,20 @@ async function handleResponse(response) {
   return data;
 }
 
-export async function initiatePayment(paymentData) {
-  const response = await fetch(`${API_BASE_URL}/payments/initiate`, {
+export async function createOrder(paymentData) {
+  const response = await fetch(`${API_BASE_URL}/create-order`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(paymentData)
+  });
+
+  return handleResponse(response);
+}
+
+export async function verifyPayment(paymentData) {
+  const response = await fetch(`${API_BASE_URL}/verify-payment`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -23,11 +36,16 @@ export async function initiatePayment(paymentData) {
 }
 
 export async function getPaymentStatus(transactionId) {
-  const response = await fetch(`${API_BASE_URL}/payments/status/${transactionId}`);
-  return handleResponse(response);
+  return {
+    transactionId,
+    amount: "-",
+    status: "pending",
+    message: "Payment status API is not available in backend yet."
+  };
 }
 
-export async function getTransactionHistory(userId) {
-  const response = await fetch(`${API_BASE_URL}/payments/history/${userId}`);
-  return handleResponse(response);
+export async function getTransactionHistory() {
+  return {
+    transactions: []
+  };
 }

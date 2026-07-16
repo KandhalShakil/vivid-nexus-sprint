@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { initiatePayment } from "../api/paymentApi";
+import { createOrder, verifyPayment } from "../api/paymentApi";
 import ErrorMessage from "./ErrorMessage";
 import Loader from "./Loader";
 
@@ -72,17 +72,33 @@ function PaymentForm() {
     return Object.keys(newErrors).length === 0;
   }
 
-  function openRazorpay(paymentResponse) {
+  function openRazorpay(orderResponse) {
     const options = {
-      key: paymentResponse.razorpayKey,
-      amount: paymentResponse.amount,
-      currency: paymentResponse.currency || "INR",
-      name: "Payment Portal",
+      key: orderResponse.razorpayKey || orderResponse.key,
+      amount: orderResponse.amount,
+      currency: orderResponse.currency || "INR",
+      name: "VividNexus Payment Portal",
       description: formData.purpose,
-      order_id: paymentResponse.orderId,
+      order_id: orderResponse.orderId || orderResponse.id,
 
-      handler: function () {
-        navigate(`/payment-status/${paymentResponse.transactionId}`);
+      handler: async function (response) {
+        try {
+          await verifyPayment({
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature: response.razorpay_signature,
+            userId: formData.userId,
+            name: formData.name,
+            email: formData.email,
+            phone: formData.phone,
+            amount: Number(formData.amount),
+            purpose: formData.purpose
+          });
+
+          navigate(`/payment-status/${response.razorpay_order_id}`);
+        } catch (error) {
+          setApiError(error.message);
+        }
       },
 
       prefill: {
@@ -92,13 +108,7 @@ function PaymentForm() {
       },
 
       theme: {
-        color: "#2563eb"
-      },
-
-      modal: {
-        ondismiss: function () {
-          navigate(`/payment-status/${paymentResponse.transactionId}`);
-        }
+        color: "#111111"
       }
     };
 
@@ -115,7 +125,7 @@ function PaymentForm() {
     try {
       setLoading(true);
 
-      const response = await initiatePayment({
+      const response = await createOrder({
         userId: formData.userId,
         name: formData.name,
         email: formData.email,
