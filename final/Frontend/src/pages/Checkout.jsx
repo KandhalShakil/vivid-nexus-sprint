@@ -63,10 +63,17 @@ export default function Checkout() {
         throw new Error(data.message || "Failed to submit lead");
       }
 
+      const customerId = `VN-${Date.now().toString(36).toUpperCase()}-${Math.random()
+        .toString(36)
+        .slice(2, 6)
+        .toUpperCase()}`;
+
       const paymentParams = new URLSearchParams({
+        customerId,
         name: form.name,
         email: form.email,
         phone: form.phone,
+        planName: plan.title || "Selected Service",
         purpose: plan.title || "Selected Service",
         amount: plan.price ? String(plan.price).replace(/,/g, "") : ""
       });

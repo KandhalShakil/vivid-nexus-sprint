@@ -13,8 +13,31 @@ const initialForm = {
   purpose: ""
 };
 
+function createCustomerId() {
+  return `VN-${Date.now().toString(36).toUpperCase()}-${Math.random()
+    .toString(36)
+    .slice(2, 6)
+    .toUpperCase()}`;
+}
+
+function getInitialFormData() {
+  const params = new URLSearchParams(window.location.search);
+
+  const phoneFromUrl = params.get("phone") || "";
+  const cleanPhone = phoneFromUrl.replace(/\D/g, "").slice(-10);
+
+  return {
+    userId: params.get("customerId") || createCustomerId(),
+    name: params.get("name") || "",
+    email: params.get("email") || "",
+    phone: cleanPhone,
+    amount: params.get("amount") || "",
+    purpose: params.get("planName") || params.get("purpose") || ""
+  };
+}
+
 function PaymentForm() {
-  const [formData, setFormData] = useState(initialForm);
+  const [formData, setFormData] = useState(() => getInitialFormData());
   const [errors, setErrors] = useState({});
   const [apiError, setApiError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -73,13 +96,15 @@ function PaymentForm() {
   }
 
   function openRazorpay(orderResponse) {
+    const order = orderResponse.order || orderResponse;
+
     const options = {
       key: orderResponse.razorpayKey || orderResponse.key,
-      amount: orderResponse.amount,
-      currency: orderResponse.currency || "INR",
+      amount: order.amount,
+      currency: order.currency || "INR",
       name: "VividNexus Payment Portal",
       description: formData.purpose,
-      order_id: orderResponse.orderId || orderResponse.id,
+      order_id: order.id,
 
       handler: async function (response) {
         try {
@@ -161,7 +186,7 @@ function PaymentForm() {
             type="text"
             name="userId"
             value={formData.userId}
-            onChange={handleChange}
+            readOnly
             placeholder="Enter customer ID"
           />
           {errors.userId && <small>{errors.userId}</small>}
@@ -209,7 +234,7 @@ function PaymentForm() {
             type="number"
             name="amount"
             value={formData.amount}
-            onChange={handleChange}
+            readOnly
             placeholder="500"
           />
           {errors.amount && <small>{errors.amount}</small>}
@@ -221,7 +246,7 @@ function PaymentForm() {
             type="text"
             name="purpose"
             value={formData.purpose}
-            onChange={handleChange}
+            readOnly
             placeholder="Course Fee / Registration"
           />
           {errors.purpose && <small>{errors.purpose}</small>}
